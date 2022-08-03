@@ -161,5 +161,32 @@ export default {
     allowHostOverride: false,
   },
 
+  freshdesk: {
+    name: "freshdesk",
+    host: "https://support.previon.ch",
+    urlPatterns: [":host:/a/tickets/:id"],
+    description: (document, service, { id }) => {
+      const type =
+        document 
+        ? document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
+        : "No Type set!"
+      const title = 
+        document
+        ? document.querySelector(".ticket-subject-heading")?.textContent?.trim()
+        : "No Ticket Title!"
+      const overtime = 
+        document
+        ? document.getElementsByName("customFields.cf_overtime")[0].checked
+        : false
+      const isOvertime = overtime ? "OVERTIME!" : ""
+      const maxTime = 
+        document
+        ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
+        : ''
+      return `#${id}: ${isOvertime} ${maxTime} ${type} - ${title}`
+    },
+    allowHostOverride: true,
+  },
+
   ...remoteServicesCommunity,
 }
