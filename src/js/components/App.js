@@ -71,6 +71,8 @@ class App extends Component {
   @computed get project() {
     const { service, projects, serviceLastProjectId, userLastProjectId } = this.props
 
+    console.log(service?.projectId)
+
     return (
       findProjectByValue(this.changeset.assignment_id)(projects) ||
       findProjectByValue(Number(serviceLastProjectId))(projects) ||

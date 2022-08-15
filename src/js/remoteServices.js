@@ -168,22 +168,38 @@ export default {
     description: (document, service, { id }) => {
       const type =
         document 
-        ? document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
-        : "No Type set!"
+          ? document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
+          : "No Type set!"
       const title = 
         document
-        ? document.querySelector(".ticket-subject-heading")?.textContent?.trim()
-        : "No Ticket Title!"
+          ? document.querySelector(".ticket-subject-heading")?.textContent?.trim()
+          : "No Ticket Title!"
       const overtime = 
         document
-        ? document.getElementsByName("customFields.cf_overtime")[0].checked
-        : false
-      const isOvertime = overtime ? "OVERTIME!" : ""
+          ? document.getElementsByName("customFields.cf_overtime")[0].checked
+          : false
+      const isOvertime = overtime ? "OVERTIME! " : ""
       const maxTime = 
         document
-        ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
-        : ''
-      return `#${id}: ${isOvertime} ${maxTime} ${type} - ${title}`
+          ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
+          : ''
+      const isMaxTime = maxTime ? `Max Time: ${maxTime} | ` : ''
+      return `#${id}: ${isOvertime}${isMaxTime}${type} - ${title}`
+    },
+    projectId: document => document.querySelector("div[data-test-id='requester-info-company-moco_project_identifier'] > div > .info-details-content").textContent.trim(),
+    taskId: document => {
+      const taskIds = document.querySelector("div[data-test-id='requester-info-company-moco_task_id_kundenbetreuung_erweiterung_incident_fehler'] > div > .info-details-content").textContent.trim().replaceAll(' ', '').split(',')
+      const type = document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
+      switch (type) {
+        case "Kundenbetreuung":
+          return taskIds[0]
+        case "Erweiterung":
+          return taskIds[1]
+        case "Incident":
+          return taskIds[2]
+        case "Fehler":
+          return taskIds[3]
+      }
     },
     allowHostOverride: true,
   },
