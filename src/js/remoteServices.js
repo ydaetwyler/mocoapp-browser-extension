@@ -1,5 +1,9 @@
 import { projectIdentifierBySelector, projectRegex } from "./utils"
 import remoteServicesCommunity from "./remoteServicesCommunity"
+import customers from "../previon/customers.js"
+import stringSimilarity from "string-similarity"
+
+let actualProject
 
 export default {
   asana: {
@@ -163,42 +167,49 @@ export default {
 
   freshdesk: {
     name: "freshdesk",
-    host: "https://support.previon.ch",
-    urlPatterns: [":host:/a/tickets/:id"],
+    urlPatterns: [
+      "https\\://support.previon.ch/a/tickets/:id",
+      "https\\://previonplusag.freshdesk.com/a/tickets/:id"
+    ],
     description: (document, service, { id }) => {
-      const type =
-        document 
-          ? document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
-          : "No Type set!"
-      const title = 
-        document
-          ? document.querySelector(".ticket-subject-heading")?.textContent?.trim()
-          : "No Ticket Title!"
-      const overtime = 
-        document
-          ? document.getElementsByName("customFields.cf_overtime")[0].checked
-          : false
-      const isOvertime = overtime ? "OVERTIME! " : ""
+      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
+      const title = document.querySelector(".ticket-subject-heading").textContent.trim()
       const maxTime = 
         document
           ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
           : ''
       const isMaxTime = maxTime ? `Max Time: ${maxTime} | ` : ''
-      return `#${id}: ${isOvertime}${isMaxTime}${type} - ${title}`
+      return `#${id}: ${isMaxTime}${type} - ${title}`
     },
-    projectId: document => document.querySelector("div[data-test-id='requester-info-company-moco_project_identifier'] > div > .info-details-content").textContent.trim(),
+    projectId: document => {
+      const customerName = document.querySelector(".info-details__company").textContent.trim()
+      const customerProjects = customers.filter(customer => 
+        stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8  
+      )
+      const hasSubProjects = 'subProjects' in customerProjects[0]
+      if (hasSubProjects) {
+        const specialSelection = document.querySelector("div [data-test-id='Spezialzuweisung Projekt'] > .ember-basic-dropdown-trigger > div > .ember-power-select-selected-item").textContent.trim()
+        const project = customerProjects[0].subProjects.filter(subProject => 
+          stringSimilarity.compareTwoStrings(subProject.name.toLowerCase(), specialSelection.toLowerCase()) >= 0.8
+        )
+        actualProject = project[0]
+        return project[0].pIdentifier
+      } else { 
+        actualProject = customerProjects[0]
+        return customerProjects[0].pIdentifier
+      }
+    },
     taskId: document => {
-      const taskIds = document.querySelector("div[data-test-id='requester-info-company-moco_task_id_kundenbetreuung_erweiterung_incident_fehler'] > div > .info-details-content").textContent.trim().replaceAll(' ', '').split(',')
-      const type = document.querySelector(".ember-power-select-selected-item")?.textContent?.trim()
+      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
       switch (type) {
         case "Kundenbetreuung":
-          return taskIds[0]
+          return actualProject.customerService
         case "Erweiterung":
-          return taskIds[1]
+          return actualProject.extension
         case "Incident":
-          return taskIds[2]
+          return actualProject.incident
         case "Fehler":
-          return taskIds[3]
+          return actualProject.bug
       }
     },
     allowHostOverride: true,
