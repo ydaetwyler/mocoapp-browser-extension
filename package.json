@@ -1,7 +1,7 @@
 {
   "name": "moco-browser-extensions",
   "description": "Browser plugin for MOCO",
-  "version": "1.8.0",
+  "version": "1.9.2",
   "license": "MIT",
   "browserslist": [
     "defaults",
@@ -9,6 +9,11 @@
     "not ie_mob 11",
     "not chrome 49"
   ],
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/test/jest.setup.js"
+    ]
+  },
   "scripts": {
     "start": "yarn start:chrome",
     "start:chrome": "node_modules/.bin/webpack --config webpack.chrome.config.js --watch --env browser=chrome --env NODE_ENV=development",
@@ -22,7 +27,8 @@
     "test:watch": "node_modules/.bin/jest --watch"
   },
   "dependencies": {
-    "axios": "0.27.2",
+    "@vespaiach/axios-fetch-adapter": "^0.3.0",
+    "axios": "^0.27.2",
     "classnames": "^2.2.6",
     "core-js": "^3.10.2",
     "date-fns": "^2.15.0",
@@ -35,8 +41,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-select": "^5.1.0",
-    "string-similarity": "^4.0.4",
-    "url-pattern": "^1.0.3"
+    "url-pattern": "^1.0.3",
+    "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
@@ -55,19 +61,19 @@
     "css-loader": "^6.2.0",
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-jest": "^26.0.0",
+    "eslint-plugin-jest": "^27.0.4",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.20.0",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^5.1.0",
-    "jest": "^28.0.3",
+    "jest": "^29.1.2",
     "mini-css-extract-plugin": "^2.2.0",
     "node-sass": "^7.0.1",
     "prettier": "^2.2.1",
     "sass-loader": "13.0.2",
     "style-loader": "^3.2.1",
     "svg-inline-loader": "^0.8.2",
-    "uuid": "^8.3.0",
+    "uuid": "^9.0.0",
     "webpack": "^5.68.0",
     "webpack-cli": "^4.4.0",
     "zip-webpack-plugin": "^4.0.1"

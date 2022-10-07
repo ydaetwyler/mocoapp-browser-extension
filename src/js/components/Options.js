@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+import browser from "webextension-polyfill"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { mocoHost } from "utils"
@@ -57,7 +58,7 @@ class Options extends Component {
         fromPairs,
       )(this.hostOverrides),
     }).then(() => {
-      const { version } = chrome.runtime.getManifest()
+      const { version } = browser.runtime.getManifest()
       const apiClient = new ApiClient({
         subdomain: this.subdomain,
         apiKey: this.apiKey,

@@ -10,7 +10,8 @@ module.exports = (env) => {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: "src/manifest.json",
+          from: "src/manifest.chrome.json",
+          to: "manifest.json",
           transform: function (content, _path) {
             const manifest = JSON.parse(
               content.toString().replace(/\[version\]/g, process.env.npm_package_version),
@@ -24,10 +25,6 @@ module.exports = (env) => {
                     ? "http://*.mocoapp.localhost/*"
                     : null,
                 ]),
-                options_ui: {
-                  ...manifest.options_ui,
-                  chrome_style: true,
-                },
                 description: process.env.npm_package_description,
                 version: process.env.npm_package_version,
               }),

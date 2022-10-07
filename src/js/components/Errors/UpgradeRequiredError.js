@@ -1,4 +1,5 @@
 import React from "react"
+import browser from "webextension-polyfill"
 import { isChrome } from "utils/browser"
 import logo from "images/moco-159x159.png"
 import firefoxAddons from "images/firefox_addons.png"
@@ -16,7 +17,7 @@ const UpgradeRequiredError = () => (
     {isChrome() ? (
       <button
         className="moco-bx-btn"
-        onClick={() => chrome.runtime.sendMessage({ type: "openExtensions" })}
+        onClick={() => browser.runtime.sendMessage({ type: "openExtensions" })}
       >
         Browser-Erweiterungen öffnen
       </button>

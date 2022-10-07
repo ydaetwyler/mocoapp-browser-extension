@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import browser from "webextension-polyfill"
 import mocoLogo from "images/moco-32x32.png"
 import mocoTimerLogo from "images/moco-timer-32x32.png"
 import { parseISO } from "date-fns"
@@ -11,7 +12,7 @@ const Bubble = ({ bookedSeconds, timedActivity, settingTimeTrackingHHMM }) => {
 
   return (
     <div className="moco-bx-bubble-inner">
-      <img className="moco-bx-logo" src={chrome.extension.getURL(logo)} />
+      <img className="moco-bx-logo" src={browser.runtime.getURL(logo)} />
       {!timedActivity && bookedSeconds > 0 && (
         <span className="moco-bx-booked-hours">
           {formatDuration(bookedSeconds, { settingTimeTrackingHHMM, showSeconds: false })}

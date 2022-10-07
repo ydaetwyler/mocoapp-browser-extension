@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill"
 import {
   groupBy,
   compose,
@@ -71,10 +72,6 @@ export const groupedProjectOptions = compose(
   nilToArray,
 )
 
-export const serializeProps = (attrs) => compose(mapValues(JSON.stringify), pick(attrs))
-
-export const parseProps = (attrs) => compose(mapValues(JSON.parse), pick(attrs))
-
 export const trace = curry((tag, value) => {
   // eslint-disable-next-line no-console
   console.log(tag, value)
@@ -86,7 +83,7 @@ export const formatDate = (date) => format(date, "yyyy-MM-dd")
 export const getStartOfWeek = () => startOfWeek(new Date(), { weekStartsOn })
 export const getEndOfWeek = () => endOfWeek(new Date(), { weekStartsOn })
 
-export const extensionSettingsUrl = () => `chrome://extensions/?id=${chrome.runtime.id}`
+export const extensionSettingsUrl = () => `chrome://extensions/?id=${browser.runtime.id}`
 
 export const extractAndSetTag = (changeset) => {
   let { description } = changeset
@@ -120,7 +117,7 @@ export const formatDuration = (
   }
 }
 
-export const projectRegex = /\[([\w-]+)\]/
+export const projectRegex = /\[([\w/-]+)\]/
 
 export const projectIdentifierBySelector =
   (selector, attr = "textContent") =>

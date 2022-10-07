@@ -1,10 +1,11 @@
+import browser from "webextension-polyfill"
 import { head, pick, reduce, filter, prop, pipe } from "lodash/fp"
 import remoteServices from "../remoteServices"
 
 const DEFAULT_SUBDOMAIN = "unset"
 
-export const isChrome = () => typeof browser === "undefined" && chrome
-export const isFirefox = () => typeof browser !== "undefined" && chrome
+export const isChrome = () => typeof globalThis.browser === "undefined" && chrome
+export const isFirefox = () => typeof globalThis.browser !== "undefined" && chrome
 
 export const defaultHostOverrides = pipe(
   filter(prop("allowHostOverride")),
@@ -23,44 +24,23 @@ const getHostOverrides = (settings) => ({
 
 export const getSettings = (withDefaultSubdomain = true) => {
   const keys = ["subdomain", "apiKey", "settingTimeTrackingHHMM", "hostOverrides"]
-  const { version } = chrome.runtime.getManifest()
-  if (isChrome()) {
-    return new Promise((resolve) => {
-      chrome.storage.sync.get(keys, (settings) => {
-        if (withDefaultSubdomain) {
-          settings.subdomain = settings.subdomain || DEFAULT_SUBDOMAIN
-        }
-        settings.hostOverrides = getHostOverrides(settings)
-        resolve({ ...settings, version })
-      })
-    })
-  } else {
-    return browser.storage.sync.get(keys).then((settings) => {
-      if (withDefaultSubdomain) {
-        settings.subdomain = settings.subdomain || DEFAULT_SUBDOMAIN
-      }
-      settings.hostOverrides = getHostOverrides(settings)
-      return { ...settings, version }
-    })
-  }
+  const { version } = browser.runtime.getManifest()
+
+  return browser.storage.sync.get(keys).then((settings) => {
+    if (withDefaultSubdomain) {
+      settings.subdomain = settings.subdomain || DEFAULT_SUBDOMAIN
+    }
+    settings.hostOverrides = getHostOverrides(settings)
+    return { ...settings, version }
+  })
 }
 
 export const setStorage = (items) => {
-  if (isChrome()) {
-    return new Promise((resolve) => {
-      chrome.storage.sync.set(items, resolve)
-    })
-  } else {
-    return browser.storage.sync.set(items)
-  }
+  return browser.storage.sync.set(items)
 }
 
 export const queryTabs = (queryInfo) => {
-  if (isChrome()) {
-    return new Promise((resolve) => chrome.tabs.query(queryInfo, resolve))
-  } else {
-    return browser.tabs.query(queryInfo)
-  }
+  return browser.tabs.query(queryInfo)
 }
 
 export const getCurrentTab = () => {

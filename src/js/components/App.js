@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import PropTypes from "prop-types"
+import browser from "webextension-polyfill"
 import Spinner from "components/Spinner"
 import Form from "components/Form"
 import Calendar from "components/Calendar"
@@ -17,6 +18,7 @@ import {
   defaultTask,
   formatDate,
 } from "utils"
+
 import { parseISO } from "date-fns"
 import InvalidConfigurationError from "components/Errors/InvalidConfigurationError"
 import UpgradeRequiredError from "components/Errors/UpgradeRequiredError"
@@ -28,48 +30,21 @@ import { get } from "lodash/fp"
 
 @observer
 class App extends Component {
-  static propTypes = {
-    loading: PropTypes.bool,
-    service: PropTypes.shape({
-      id: PropTypes.string,
-      url: PropTypes.string,
-      name: PropTypes.string,
-      description: PropTypes.string,
-      projectId: PropTypes.string,
-      taskId: PropTypes.string,
-    }),
-    subdomain: PropTypes.string,
-    activities: PropTypes.array,
-    schedules: PropTypes.array,
-    projects: PropTypes.array,
-    timedActivity: PropTypes.shape({
-      customer_name: PropTypes.string.isRequired,
-      assignment_name: PropTypes.string.isRequired,
-      task_name: PropTypes.string.isRequired,
-      timer_started_at: PropTypes.string.isRequired,
-      seconds: PropTypes.number.isRequired,
-    }),
-    serviceLastProjectId: PropTypes.number,
-    userLastProjectId: PropTypes.number,
-    serviceLastTaskId: PropTypes.number,
-    userLastTaskId: PropTypes.number,
-    fromDate: PropTypes.string,
-    toDate: PropTypes.string,
-    errorType: PropTypes.string,
-    errorMessage: PropTypes.string,
-  }
-
-  static defaultProps = {
-    activities: [],
-    schedules: [],
-    projects: [],
+  constructor(props) {
+    super(props)
+    this.state = {
+      loading: true,
+      activities: [],
+      schedules: [],
+      projects: [],
+    }
   }
 
   @observable changeset = {}
   @observable formErrors = {}
 
   @computed get project() {
-    const { service, projects, serviceLastProjectId, userLastProjectId } = this.props
+    const { service, projects, serviceLastProjectId, userLastProjectId } = this.state
 
     return (
       findProjectByValue(this.changeset.assignment_id)(projects) ||
@@ -81,7 +56,7 @@ class App extends Component {
   }
 
   @computed get task() {
-    const { service, serviceLastTaskId, userLastTaskId } = this.props
+    const { service, serviceLastTaskId, userLastTaskId } = this.state
     return (
       findTask(this.changeset.task_id || serviceLastTaskId || service?.taskId || userLastTaskId)(
         this.project,
@@ -94,7 +69,7 @@ class App extends Component {
   }
 
   @computed get changesetWithDefaults() {
-    const { service } = this.props
+    const { service } = this.state
 
     const defaults = {
       remote_service: service?.name,
@@ -115,16 +90,19 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("keydown", this.handleKeyDown)
-    chrome.runtime.onMessage.addListener(this.handleSetFormErrors)
+    browser.runtime.onMessage.addListener(this.handleSetFormErrors)
+    window.addEventListener("message", this.handleMessagePopupData)
+    window.parent.postMessage({ type: "moco-bx-popup-ready" }, window.document.referrer || "*")
   }
 
   componentWillUnmount() {
     window.removeEventListener("keydown", this.handleKeyDown)
-    chrome.runtime.onMessage.removeListener(this.handleSetFormErrors)
+    window.removeEventListener("message", this.handleMessagePopupData)
+    browser.runtime.onMessage.removeListener(this.handleSetFormErrors)
   }
 
   handleChange = (event) => {
-    const { projects } = this.props
+    const { projects } = this.state
     const {
       target: { name, value },
     } = event
@@ -142,9 +120,9 @@ class App extends Component {
   }
 
   handleStopTimer = (timedActivity) => {
-    const { service } = this.props
+    const { service } = this.state
 
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: "stopTimer",
       payload: { timedActivity, service },
     })
@@ -152,9 +130,9 @@ class App extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault()
-    const { service } = this.props
+    const { service } = this.state
 
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
       type: "createActivity",
       payload: {
         activity: extractAndSetTag(this.changesetWithDefaults),
@@ -166,13 +144,22 @@ class App extends Component {
   handleKeyDown = (event) => {
     if (event.keyCode === 27) {
       event.stopPropagation()
-      chrome.runtime.sendMessage({ type: "closePopup" })
+      browser.runtime.sendMessage({ type: "closePopup" })
     }
   }
 
   handleSetFormErrors = ({ type, payload }) => {
     if (type === "setFormErrors") {
       this.formErrors = payload
+    }
+  }
+
+  handleMessagePopupData = (event) => {
+    if (event.data.type === "moco-bx-popup-data") {
+      this.setState({
+        loading: false,
+        ...JSON.parse(event.data.data),
+      })
     }
   }
 
@@ -188,7 +175,7 @@ class App extends Component {
       toDate,
       errorType,
       errorMessage,
-    } = this.props
+    } = this.state
 
     if (loading) {
       return <Spinner />

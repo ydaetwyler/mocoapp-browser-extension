@@ -129,10 +129,24 @@ export default {
 
   youtrack: {
     name: "youtrack",
-    host: "https://:org.myjetbrains.com",
-    urlPatterns: [":host:/youtrack/issue/:id", ":host:/issue/:id"],
-    description: (document) => document.querySelector("yt-issue-body h1")?.textContent?.trim(),
-    projectId: projectIdentifierBySelector("yt-issue-body h1"),
+    host: "https://:org.youtrack.cloud",
+    urlPatterns: [
+      ":host:/issue/:id(/*)",
+      ":host:/youtrack/issue/:id(/*)",
+      ":host:/issues",
+      ":host:/search/:filter",
+    ],
+    queryParams: {
+      id: "preview",
+    },
+    description: (document) =>
+      document.querySelector('h1[data-test="ticket-summary"]')?.textContent?.trim(),
+    projectId: (document) =>
+      projectIdentifierBySelector("article aside div:first-child span")(document) ||
+      projectIdentifierBySelector(
+        "table[data-test=fields-compact] tr:first-child td:first-child button",
+      )(document) ||
+      projectIdentifierBySelector("h1[data-test=ticket-summary]")(document),
     allowHostOverride: true,
   },
 
@@ -141,11 +155,12 @@ export default {
     host: "https://:region.wrike.com",
     urlPatterns: [
       ":host:/workspace.htm#folder*",
+      ":host:/workspace.htm#todo",
       ":host:/workspace.htm#created-by-me",
       ":host:/workspace.htm#starred-tasks",
     ],
     queryParams: {
-      id: "sidePanelItemId",
+      id: ["sidePanelItemId", "overlayEntityId"],
     },
     description: (document) => document.querySelector(".title__ghost")?.textContent?.trim(),
     projectId: projectIdentifierBySelector(".header-title__main"),
