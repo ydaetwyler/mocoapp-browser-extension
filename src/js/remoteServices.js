@@ -1,5 +1,7 @@
 import { projectIdentifierBySelector, projectRegex } from "./utils"
 import remoteServicesCommunity from "./remoteServicesCommunity"
+import customers from "../previon/customers.js"
+import stringSimilarity from "string-similarity"
 
 export default {
   asana: {
@@ -175,6 +177,56 @@ export default {
     projectId: projectIdentifierBySelector(".taskItem.selected .taskItem-titleWrapper-title"),
     allowHostOverride: false,
   },
+
+  freshdesk: {
+    name: "freshdesk",
+    urlPatterns: [
+      "https\\://support.previon.ch/a/tickets/:id",
+      "https\\://previonplusag.freshdesk.com/a/tickets/:id"
+    ],
+    description: (document, service, { id }) => {
+      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
+      const title = document.querySelector(".ticket-subject-heading").textContent.trim()
+      const maxTime =
+        document
+          ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
+          : ''
+      const isMaxTime = maxTime ? `Max Time: ${maxTime} | ` : ''
+      return `#${id}: ${isMaxTime}${type} - ${title}`
+    },
+    projectId: document => {
+      const customerName = document.querySelector(".info-details__company").textContent.trim()
+      const customerProjects = customers.filter(customer =>
+        stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
+      )
+      const hasSubProjects = 'subProjects' in customerProjects[0]
+      if (hasSubProjects) {
+        const specialSelection = document.querySelector("div [data-test-id='Spezialzuweisung Projekt'] > .ember-basic-dropdown-trigger > div > .ember-power-select-selected-item").textContent.trim()
+        const project = customerProjects[0].subProjects.filter(subProject =>
+          stringSimilarity.compareTwoStrings(subProject.name.toLowerCase(), specialSelection.toLowerCase()) >= 0.8
+        )
+        actualProject = project[0]
+        return project[0].pIdentifier
+      } else {
+        actualProject = customerProjects[0]
+        return customerProjects[0].pIdentifier
+      }
+    },
+    taskId: document => {
+      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
+      switch (type) {
+        case "Kundenbetreuung":
+          return actualProject.customerService
+        case "Erweiterung":
+          return actualProject.extension
+        case "Incident":
+          return actualProject.incident
+        case "Fehler":
+          return actualProject.bug
+      }
+    },
+    allowHostOverride: true,
+  }, 
 
   ...remoteServicesCommunity,
 }
