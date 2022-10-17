@@ -18,7 +18,7 @@ const customers = [
         bug: "14403727",
     },
     {
-        name: "AMAG Import AG",
+        name: "AMAG Group AG",
         pIdentifier: "P22063",
         maintenance: "14403735",
         customerService: "14403736",
