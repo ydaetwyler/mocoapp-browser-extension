@@ -181,7 +181,7 @@ export default {
   },
 
   freshdesk: {
-    name: "freshdesk",
+    name: "asana", // Should be freshdesk but there is a whitelist in place at the API endpoint -> We use an existing name here
     host: "https://previonplusag.freshdesk.com",
     urlPatterns: [":host:/a/tickets/:id"],
     description: (document, service, { id }) => {
@@ -229,7 +229,7 @@ export default {
   },
 
   previon: {
-    name: "previon",
+    name: "asana", // Should be previon but there is a whitelist in place at the API endpoint -> We use an existing name here
     host: "https://support.previon.ch",
     urlPatterns: [":host:/a/tickets/:id"],
     description: (document, service, { id }) => {
