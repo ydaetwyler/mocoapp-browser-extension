@@ -6,7 +6,7 @@ import stringSimilarity from "string-similarity"
 let actualProject
 
 export default {
-  asana: {
+  /*asana: {
     name: "asana",
     host: "https://app.asana.com",
     urlPatterns: [
@@ -29,9 +29,9 @@ export default {
     projectId: projectIdentifierBySelector(".TopbarPageHeaderStructure-titleRow h1"),
     allowHostOverride: false,
     position: { right: "50%", transform: "translateX(50%)" },
-  },
+  },*/
 
-  clickup: {
+  /*clickup: {
     name: "clickup",
     host: "https://app.clickup.com",
     urlPatterns: [":host:/t/:id", ":host:/t/:id/:customId", ":host:/:space/v/l/f/:folder"],
@@ -40,7 +40,7 @@ export default {
       return `#${customId || id} ${title || ""}`.trim()
     },
     allowHostOverride: false,
-  },
+  },*/
 
   "github-pr": {
     name: "github",
@@ -180,7 +180,7 @@ export default {
     allowHostOverride: false,
   },
 
-  freshdesk: {
+  asana: {
     name: "asana", // Should be freshdesk but there is a whitelist in place at the API endpoint -> We use an existing name here
     host: "https://previonplusag.freshdesk.com",
     urlPatterns: [":host:/a/tickets/:id"],
@@ -228,8 +228,8 @@ export default {
     allowHostOverride: true,
   },
 
-  previon: {
-    name: "asana", // Should be previon but there is a whitelist in place at the API endpoint -> We use an existing name here
+  clickup: {
+    name: "clickup", // Should be previon but there is a whitelist in place at the API endpoint -> We use an existing name here
     host: "https://support.previon.ch",
     urlPatterns: [":host:/a/tickets/:id"],
     description: (document, service, { id }) => {
