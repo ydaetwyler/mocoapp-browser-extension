@@ -220,7 +220,7 @@ export default {
             actualProject = customerProjects[0]
             
             return customerProjects[0].pIdentifier
-      }
+          }
         }).catch(() => {
           console.log('======>>>')
           console.log('======>>>')
@@ -283,7 +283,7 @@ export default {
             actualProject = customerProjects[0]
             
             return customerProjects[0].pIdentifier
-      }
+          }
         }).catch(() => { 
           console.log('======>>>')
           console.log('======>>>')
