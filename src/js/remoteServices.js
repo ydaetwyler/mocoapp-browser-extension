@@ -221,7 +221,14 @@ export default {
             
             return customerProjects[0].pIdentifier
       }
-        }).catch(() => window.alert('Customers JSON not available!'))
+        }).catch(() => {
+          console.log('======>>>')
+          console.log('======>>>')
+          console.log('Customers JSON not available!')
+          console.log('^^^======^^^')
+          console.log('^^^======^^^')
+          window.alert('Customers JSON not available!')
+        })
     },
     taskId: document => {
       const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
@@ -277,7 +284,14 @@ export default {
             
             return customerProjects[0].pIdentifier
       }
-        }).catch(() => window.alert('Customers JSON not available!'))
+        }).catch(() => { 
+          console.log('======>>>')
+          console.log('======>>>')
+          console.log('Customers JSON not available!')
+          console.log('^^^======^^^')
+          console.log('^^^======^^^')
+          window.alert('Customers JSON not available!')
+        })
     },
     taskId: document => {
       const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
