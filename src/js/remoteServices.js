@@ -2,6 +2,7 @@ import { projectIdentifierBySelector, projectRegex } from "./utils"
 import remoteServicesCommunity from "./remoteServicesCommunity"
 import axios from 'axios'
 import stringSimilarity from "string-similarity"
+import customers from './previon/customers.js'
 
 let actualProject
 
@@ -200,9 +201,9 @@ export default {
     },
     projectId: document => {
 
-      axios.get('https://www.erp-mapping.previon.net/public/api/customers')
+      /*axios.get('https://www.erp-mapping.previon.net/public/api/customers')
         .then(response => {
-          const customers = JSON.parse(response)
+          const customers = response.data*/
           const customerName = document.querySelector(".info-details__company").textContent.trim()
           const customerProjects = customers.filter(customer =>
             stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
@@ -221,14 +222,14 @@ export default {
             
             return customerProjects[0].pIdentifier
           }
-        }).catch(() => {
+        /*}).catch(() => {
           console.log('======>>>')
           console.log('======>>>')
           console.log('Customers JSON not available!')
           console.log('^^^======^^^')
           console.log('^^^======^^^')
           window.alert('Customers JSON not available!')
-        })
+        })*/
     },
     taskId: document => {
       const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
@@ -263,9 +264,9 @@ export default {
     },
     projectId: document => {
 
-      axios.get('https://www.erp-mapping.previon.net/public/api/customers')
+      /*axios.get('https://www.erp-mapping.previon.net/public/api/customers')
         .then(response => {
-          const customers = JSON.parse(response)
+          const customers = response.data*/
           const customerName = document.querySelector(".info-details__company").textContent.trim()
           const customerProjects = customers.filter(customer =>
             stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
@@ -284,14 +285,14 @@ export default {
             
             return customerProjects[0].pIdentifier
           }
-        }).catch(() => { 
+        /*}).catch(() => { 
           console.log('======>>>')
           console.log('======>>>')
           console.log('Customers JSON not available!')
           console.log('^^^======^^^')
           console.log('^^^======^^^')
           window.alert('Customers JSON not available!')
-        })
+        })*/
     },
     taskId: document => {
       const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
