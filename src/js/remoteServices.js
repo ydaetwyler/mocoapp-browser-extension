@@ -1,17 +1,18 @@
 import { projectIdentifierBySelector, projectRegex } from "./utils"
 import remoteServicesCommunity from "./remoteServicesCommunity"
 import stringSimilarity from "string-similarity"
-import { allCustomers } from './utils/getCustomers.js'
+import axios from 'axios'
+
+// Get the actual mappings and store them in the local storage
+axios.get('https://www.erp-mapping.previon.net/public/api/customers')
+    .then(response => {
+        window.localStorage.setItem('pcustomers', JSON.stringify(response.data))
+    })
 
 let actualProject 
 
-let projectSet = new Promise((resolve, reject) => {
-  setTimeout(() => {
-    resolve()
-  }, 300)
-})
-
 export default {
+  // Those two services are commented out because we need them as our custom services (we can't add new services, therefore we use existing ones)
   /*asana: {
     name: "asana",
     host: "https://app.asana.com",
@@ -194,20 +195,17 @@ export default {
     host: "https://previonplusag.freshdesk.com",
     urlPatterns: [":host:/a/tickets/:id"],
     description: (document, service, { id }) => {
-      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
       const title = document.querySelector(".ticket-subject-heading").textContent.trim()
       const maxTime =
         document
           ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
           : ''
-      const isMaxTime = maxTime ? `Max Time: ${maxTime} | ` : ''
+      const isMaxTime = maxTime ? `${maxTime}h ` : ''
       
-      return `#${id}: ${isMaxTime}${type} - ${title}`
+      return `#${id} ${isMaxTime}${title}`
     },
     projectId: document => {
-      allCustomers.then(customers => {
-        console.log('CUSTOMERS =============>>>')
-        console.log(customers)
+        const customers = JSON.parse(window.localStorage.getItem('pcustomers'))
         const customerName = document.querySelector(".info-details__company").textContent.trim()
         const customerProjects = customers.filter(customer =>
           stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
@@ -223,33 +221,22 @@ export default {
           return project[0].pIdentifier
         } else {
           actualProject = customerProjects[0]
-
-          console.log('Identifier: ===>===>===>===>===>===>====>======>>>')
-          console.log(customerProjects[0].pIdentifier)
           
           return customerProjects[0].pIdentifier
         }
-      }).catch(() => {
-        console.log('Customers JSON not available!')
-        window.alert('Customers JSON not available!')
-      })
     },
-    taskId: async document => {
-      projectSet.then(() => {
-        const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
-        console.log('ActualProject ===>===>===>===>===>===>====>>>===>>>>')
-        console.log(actualProject)
-        switch (type) {
-          case "Kundenbetreuung":
-            return actualProject.customerService
-          case "Erweiterung":
-            return actualProject.extension
-          case "Incident":
-            return actualProject.incident
-          case "Fehler":
-            return actualProject.bug
-        }
-      })
+    taskId: document => {
+      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
+      switch (type) {
+        case "Kundenbetreuung":
+          return actualProject.customerService
+        case "Erweiterung":
+          return actualProject.extension
+        case "Incident":
+          return actualProject.incident
+        case "Fehler":
+          return actualProject.bug
+      }
     },
     allowHostOverride: true,
   },
@@ -259,47 +246,35 @@ export default {
     host: "https://support.previon.ch",
     urlPatterns: [":host:/a/tickets/:id"],
     description: (document, service, { id }) => {
-      const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
       const title = document.querySelector(".ticket-subject-heading").textContent.trim()
       const maxTime =
         document
           ? document.getElementsByName("customFields.geschtzter_aufwand")[0].value.toString()
           : ''
-      const isMaxTime = maxTime ? `Max Time: ${maxTime} | ` : ''
+      const isMaxTime = maxTime ? `${maxTime}h ` : ''
       
-      return `#${id}: ${isMaxTime}${type} - ${title}`
+      return `#${id} ${isMaxTime}${title}`
     },
     projectId: document => {
-
-      /*axios.get('https://www.erp-mapping.previon.net/public/api/customers')
-        .then(response => {
-          const customers = response.data*/
-          const customerName = document.querySelector(".info-details__company").textContent.trim()
-          const customerProjects = customers.filter(customer =>
-            stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
+        const customers = JSON.parse(window.localStorage.getItem('pcustomers'))
+        const customerName = document.querySelector(".info-details__company").textContent.trim()
+        const customerProjects = customers.filter(customer =>
+          stringSimilarity.compareTwoStrings(customer.name.toLowerCase(), customerName.toLowerCase()) >= 0.8 
+        )
+        const hasSubProjects = 'subProjects' in customerProjects[0]
+        if (hasSubProjects) {
+          const specialSelection = document.querySelector("div [data-test-id='Spezialzuweisung Projekt'] > .ember-basic-dropdown-trigger > div > .ember-power-select-selected-item").textContent.trim()
+          const project = customerProjects[0].subProjects.filter(subProject =>
+          stringSimilarity.compareTwoStrings(subProject.name.toLowerCase(), specialSelection.toLowerCase()) >= 0.8
           )
-          const hasSubProjects = 'subProjects' in customerProjects[0]
-          if (hasSubProjects) {
-            const specialSelection = document.querySelector("div [data-test-id='Spezialzuweisung Projekt'] > .ember-basic-dropdown-trigger > div > .ember-power-select-selected-item").textContent.trim()
-            const project = customerProjects[0].subProjects.filter(subProject =>
-            stringSimilarity.compareTwoStrings(subProject.name.toLowerCase(), specialSelection.toLowerCase()) >= 0.8
-            )
-            actualProject = project[0]
-            
-            return project[0].pIdentifier
-          } else {
-            actualProject = customerProjects[0]
-            
-            return customerProjects[0].pIdentifier
-          }
-        /*}).catch(() => { 
-          console.log('======>>>')
-          console.log('======>>>')
-          console.log('Customers JSON not available!')
-          console.log('^^^======^^^')
-          console.log('^^^======^^^')
-          window.alert('Customers JSON not available!')
-        })*/
+          actualProject = project[0]
+          
+          return project[0].pIdentifier
+        } else {
+          actualProject = customerProjects[0]
+          
+          return customerProjects[0].pIdentifier
+        }
     },
     taskId: document => {
       const type = document.querySelector("div [data-test-id='tkt-properties-ticket_type'] > div > div > .ember-power-select-trigger > div > span").textContent.trim()
